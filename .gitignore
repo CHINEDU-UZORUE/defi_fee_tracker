@@ -1,2 +1,5 @@
 .env
 grp/*
+data/*
+tests/*
+notebooks/01_api_keys.ipynb

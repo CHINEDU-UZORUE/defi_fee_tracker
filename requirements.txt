@@ -1,0 +1,14 @@
+streamlit
+joblib
+pandas
+json
+time
+sys
+os
+numpy
+requests
+plotly
+python-dotenv
+plotly.io
+matplotlib
+seaborn
