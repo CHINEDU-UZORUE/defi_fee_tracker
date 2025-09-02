@@ -12,3 +12,7 @@ python-dotenv
 plotly.io
 matplotlib
 seaborn
+tdqm
+Levenshtein
+re
+glob

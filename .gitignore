@@ -1,5 +1,4 @@
 .env
 grp/*
-data/*
 tests/*
 notebooks/01_api_test.ipynb
