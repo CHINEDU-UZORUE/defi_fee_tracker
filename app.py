@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for colorful KPI cards
+# Custom CSS for colorful KPI cards and landing page
 st.markdown("""
 <style>
     .metric-card {
@@ -63,6 +63,24 @@ st.markdown("""
         font-weight: 700;
         margin: 0;
     }
+   .welcome-section {
+            background-color: #1f2937; 
+            padding: 20px; border-radius: 10px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+    .welcome-title {
+            font-size: 2rem; 
+            font-weight: 700; 
+            color: #e5e7eb; 
+            margin-bottom: 1rem;
+            }
+    .welcome-text {
+            font-size: 1.1rem; 
+            color: #d1d5db; 
+            line-height: 3.0;
+            }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -93,32 +111,55 @@ def create_metric_card(title, value, card_type="default"):
 data_dir = 'data/streamlit'
 metadata_file = os.path.join(data_dir, 'latest_data_metadata.joblib')
 
+# Check if metadata file exists
 if not os.path.exists(metadata_file):
-    st.error("Data not found. Run the data collection and analysis notebooks first.")
+    st.error("Metadata file not found. Please run the data collection and analysis notebooks first.")
     st.stop()
 
-metadata = joblib.load(metadata_file)
-data_files = metadata['data_files']
+# Load metadata with error handling
+try:
+    metadata = joblib.load(metadata_file)
+    
+except Exception as e:
+    st.error(f"Failed to load metadata file: {str(e)}")
+    metadata = {}
+    st.stop()
 
-# Load all datasets
+# Verify last_updated key
+last_updated = metadata.get('last_updated', None)
+if last_updated is None:
+    st.warning("Warning: 'last_updated' key not found in metadata. Using current time as fallback.")
+    last_updated = datetime.now()
+
+# Load datasets
+data_files = metadata.get('data_files', {})
 datasets = {}
 for key, filename in data_files.items():
     filepath = os.path.join(data_dir, filename)
-    datasets[key] = joblib.load(filepath) if os.path.exists(filepath) else (pd.DataFrame() if key not in ['financial_rankings', 'raw_token_holders'] else {})
+    if os.path.exists(filepath):
+        try:
+            datasets[key] = joblib.load(filepath)
+            
+        except Exception as e:
+            st.error(f"Failed to load dataset {key}: {str(e)}")
+            datasets[key] = pd.DataFrame() if key not in ['financial_rankings', 'raw_token_holders'] else {}
+    else:
+        st.warning(f"Dataset file {filename} not found.")
+        datasets[key] = pd.DataFrame() if key not in ['financial_rankings', 'raw_token_holders'] else {}
 
-tab1_overview = datasets['tab1_overview']
-tab2_revenue = datasets['tab2_revenue']
-tab2_fees = datasets['tab2_fees']
-tab3_metrics = datasets['tab3_metrics']
-tab4_distribution = datasets['tab4_distribution']
-category_analysis = datasets['category_analysis']
-financial_rankings = datasets['financial_rankings']
-summary_stats = datasets['summary_stats']
+tab1_overview = datasets.get('tab1_overview', pd.DataFrame())
+tab2_revenue = datasets.get('tab2_revenue', pd.DataFrame())
+tab2_fees = datasets.get('tab2_fees', pd.DataFrame())
+tab3_metrics = datasets.get('tab3_metrics', pd.DataFrame())
+tab4_distribution = datasets.get('tab4_distribution', pd.DataFrame())
+category_analysis = datasets.get('category_analysis', pd.DataFrame())
+financial_rankings = datasets.get('financial_rankings', {})
+summary_stats = datasets.get('summary_stats', {})
 raw_token_holders = datasets.get('raw_token_holders', {})
 
 # App header
 st.title("🚀 Solana DeFi Fees & Revenue Tracker")
-st.markdown(f"**Last Updated:** {metadata['last_updated'].strftime('%Y-%m-%d %H:%M:%S')}")
+st.markdown(f"**Last Updated:** {last_updated.strftime('%Y-%m-%d %H:%M:%S')}")
 
 # Sidebar with filters
 st.sidebar.header("🔍 Filters & Controls")
@@ -197,7 +238,31 @@ def apply_filters(df, categories=None, tvl_range=None, top_n=None):
     return filtered_df
 
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "💰 Revenue & Fees", "📈 Metrics", "🎯 Token Distribution"])
+tab0, tab1, tab2, tab3, tab4 = st.tabs(["🏠 Home", "📊 Overview", "💰 Revenue & Fees", "📈 Metrics", "🎯 Token Distribution"])
+
+# Tab 0: Home (Landing Page)
+with tab0:
+    st.markdown("""
+    <div class="welcome-section">
+        <h1 class="welcome-title">Welcome to the Solana DeFi Tracker Dashboard! 🚀</h1>
+        <p class="welcome-text">
+            This is a Solana DeFi Protocols tracker with an interactive dashboard for fees, revenue, price-to-fee ratio and other metrics. It is powered by data from <strong>DeFiLlama</strong>, <strong>CoinGecko</strong>, and <strong>Solana RPC (Helius)</strong>. 
+            Analyze over 200 protocols across key metrics to make informed decisions:
+        </p>
+        <ul class="welcome-text">
+            <li><strong>Overview</strong>: Track Total Value Locked (TVL), market capitalization, and protocol categories.</li>
+            <li><strong>Revenue & Fees</strong>: Explore daily, weekly, and monthly earnings, including Fees/Revenue ratios.</li>
+            <li><strong>Financial Metrics</strong>: Evaluate protocols with Price-to-Fees (P/F) and Price-to-Revenue (P/R) ratios.</li>
+            <li><strong>Token Distribution</strong>: Assess decentralization through Gini coefficients and holder concentration.</li>
+        </ul>
+        <p class="welcome-text">
+            Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, or hit the "Refresh Data" button for the latest updates. Built with <strong>Streamlit</strong> for seamless exploration.
+        </p>
+        <p class="welcome-text">
+            <strong>Last Updated:</strong> {last_updated_str}
+        </p>
+    </div>
+    """.format(last_updated_str=last_updated.strftime('%Y-%m-%d %H:%M:%S')), unsafe_allow_html=True)
 
 # Tab 1: Overview
 with tab1:
@@ -250,7 +315,7 @@ with tab1:
     if not filtered_overview.empty:
         # Protocol table
         st.subheader("📋 Protocol Details")
-        display_cols = [col for col in ['Protocol', 'Category', 'TVL_USD', 'Market_Cap_USD', 'Price_USD']
+        display_cols = [col for col in ['Protocol', 'Category', 'TVL_USD', 'Market_Cap_USD']
                        if col in filtered_overview.columns]
         
         display_df = filtered_overview[display_cols].reset_index(drop=True)
@@ -258,8 +323,7 @@ with tab1:
         
         format_dict = {
             'TVL_USD': lambda x: format_currency(x),
-            'Market_Cap_USD': lambda x: format_currency(x),
-            'Price_USD': lambda x: f"${x:.2f}" if pd.notna(x) else "$0.00"
+            'Market_Cap_USD': lambda x: format_currency(x)
         }
         format_dict = {k: v for k, v in format_dict.items() if k in display_cols}
         
@@ -294,7 +358,7 @@ with tab2:
     # KPIs
     if 'financial' in summary_stats:
         kpis = summary_stats['financial']
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
             protocols_with_rev = len(tab2_revenue[tab2_revenue['Revenue_24h'] > 0]) if not tab2_revenue.empty else kpis.get('protocols_with_revenue', 0)
@@ -327,6 +391,14 @@ with tab2:
                 format_currency(daily_fees),
                 "default"
             ), unsafe_allow_html=True)
+        
+        with col5:
+            avg_ratio = summary_stats['financial'].get('avg_fees_revenue_ratio', 'N/A')
+            st.markdown(create_metric_card(
+                "Avg Fees/Rev Ratio",
+                f"{avg_ratio:.2f}" if avg_ratio and not pd.isna(avg_ratio) else "N/A",
+                "default"
+            ), unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -344,19 +416,25 @@ with tab2:
                         title="24h Revenue", color_discrete_sequence=['#11998e'])
             fig.update_layout(xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
+            
+           
         
-        # Full revenue table
+        # All Revenue Data table
         if not tab2_revenue.empty:
             st.subheader("📋 All Revenue Data")
-            display_revenue = tab2_revenue[['Protocol', 'Revenue_24h', 'Revenue_7d', 'Revenue_30d']].reset_index(drop=True)
+            display_revenue = tab3_metrics[['Protocol', 'Revenue_24h', 'Revenue_7d', 'Revenue_30d',
+                                            'Fees_Revenue_Ratio_24h', 'Fees_Revenue_Ratio_7d', 'Fees_Revenue_Ratio_30d']].reset_index(drop=True)
             display_revenue.index = display_revenue.index + 1
             format_dict = {
                 'Revenue_24h': lambda x: format_currency(x),
                 'Revenue_7d': lambda x: format_currency(x),
-                'Revenue_30d': lambda x: format_currency(x)
+                'Revenue_30d': lambda x: format_currency(x),
+                'Fees_Revenue_Ratio_24h': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
+                'Fees_Revenue_Ratio_7d': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
+                'Fees_Revenue_Ratio_30d': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A"
             }
             st.dataframe(display_revenue.style.format(format_dict), use_container_width=True)
-    
+
     # Fees
     with col2:
         st.subheader("💸 Top Fee Generators")
@@ -372,7 +450,7 @@ with tab2:
             fig.update_layout(xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
         
-        # Full fees table
+        # All Fees Data table
         if not tab2_fees.empty:
             st.subheader("📋 All Fees Data")
             display_fees = tab2_fees[['Protocol', 'Fees_24h', 'Fees_7d', 'Fees_30d']].reset_index(drop=True)
@@ -383,6 +461,28 @@ with tab2:
                 'Fees_30d': lambda x: format_currency(x)
             }
             st.dataframe(display_fees.style.format(format_dict), use_container_width=True)
+
+    col1, col2 = st.columns(2)
+
+ # Add Fees/Revenue Ratio chart and table
+    with col1:
+            st.subheader("📊 24h Fees/Revenue Ratio Chart (Top 10)")
+            if 'Fees_Revenue_Ratio_24h' in top_revenue.columns:
+                fig_ratio = px.bar(top_revenue.head(10).sort_values(by='Fees_Revenue_Ratio_24h', ascending=False), x='Protocol', y='Fees_Revenue_Ratio_24h',
+                                  title="24h Fees/Revenue Ratio", color_discrete_sequence=['#764ba2'])
+                fig_ratio.update_layout(xaxis_tickangle=45)
+                st.plotly_chart(fig_ratio, use_container_width=True)
+    with col2:          
+            st.subheader("📊 24h Fees/Revenue Ratio Table (Top 10)")
+            display_ratio = top_revenue[['Protocol', 'Fees_Revenue_Ratio_24h']].head(10).sort_values(by='Fees_Revenue_Ratio_24h', ascending=False).reset_index(drop=True)
+            display_ratio.index = display_ratio.index + 1
+            format_dict = {
+                    'Fees_Revenue_Ratio_24h': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A"
+                }
+            st.dataframe(display_ratio.style.format(format_dict), use_container_width=True)
+
+
+         
 
 # Tab 3: Metrics
 with tab3:
@@ -463,7 +563,7 @@ with tab3:
         
         # Financial metrics table
         st.subheader("📋 Financial Metrics Table")
-        metrics_cols = ['Protocol', 'Revenue_24h', 'Fees_24h', 'Market_Cap_USD', 'PF_Ratio', 'PR_Ratio']
+        metrics_cols = ['Protocol', 'Revenue_24h', 'Fees_24h', 'Market_Cap_USD', 'PF_Ratio', 'PR_Ratio', 'Fees_Revenue_Ratio_24h']
         metrics_cols = [col for col in metrics_cols if col in filtered_metrics.columns]
         
         if metrics_cols:
@@ -475,7 +575,8 @@ with tab3:
                 'Fees_24h': lambda x: format_currency(x),
                 'Market_Cap_USD': lambda x: format_currency(x),
                 'PF_Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
-                'PR_Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A"
+                'PR_Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
+                'Fees_Revenue_Ratio_24h': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A"
             }
             format_dict = {k: v for k, v in format_dict.items() if k in metrics_cols}
             
@@ -604,38 +705,38 @@ with tab4:
                 st.plotly_chart(fig, use_container_width=True)
     
         # Token filter for holders
-    if raw_token_holders:
-        st.subheader("🔍 View Top Holders for a Token")
-        available_tokens = sorted(raw_token_holders.keys())
-        selected_token = st.selectbox("Select Token", options=available_tokens)
-        
-        if selected_token:
-            holders_df = raw_token_holders[selected_token].head(10)
-            if not holders_df.empty:
-                # Ensure 'account_address' exists
-                if 'account_address' not in holders_df.columns:
-                    holders_df['account_address'] = holders_df.index.astype(str)
-                
-                # Table
-                st.subheader(f"Top 10 Holders for {selected_token}")
-                display_holders = holders_df[['rank', 'account_address', 'ui_amount']].reset_index(drop=True)
-                display_holders.index = display_holders.index + 1
-                format_dict = {
-                    'ui_amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
-                }
-                st.dataframe(display_holders.style.format(format_dict), use_container_width=True)
-                
-                # Pie chart
-                total_supply = holders_df['ui_amount'].sum()
-                if total_supply > 0:
-                    holders_df['share_percent'] = (holders_df['ui_amount'] / total_supply) * 100
-                    fig_pie = px.pie(
-                        holders_df,
-                        values='share_percent',
-                        names='account_address',
-                        title=f"Top 10 Holder Shares for {selected_token}"
-                    )
-                    st.plotly_chart(fig_pie, use_container_width=True)
+        if raw_token_holders:
+            st.subheader("🔍 View Top Holders for a Token")
+            available_tokens = sorted(raw_token_holders.keys())
+            selected_token = st.selectbox("Select Token", options=available_tokens)
+            
+            if selected_token:
+                holders_df = raw_token_holders[selected_token].head(10)
+                if not holders_df.empty:
+                    # Ensure 'account_address' exists
+                    if 'account_address' not in holders_df.columns:
+                        holders_df['account_address'] = holders_df.index.astype(str)
+                    
+                    # Table
+                    st.subheader(f"Top 10 Holders for {selected_token}")
+                    display_holders = holders_df[['rank', 'account_address', 'ui_amount']].reset_index(drop=True)
+                    display_holders.index = display_holders.index + 1
+                    format_dict = {
+                        'ui_amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
+                    }
+                    st.dataframe(display_holders.style.format(format_dict), use_container_width=True)
+                    
+                    # Pie chart
+                    total_supply = holders_df['ui_amount'].sum()
+                    if total_supply > 0:
+                        holders_df['share_percent'] = (holders_df['ui_amount'] / total_supply) * 100
+                        fig_pie = px.pie(
+                            holders_df,
+                            values='share_percent',
+                            names='account_address',
+                            title=f"Top 10 Holder Shares for {selected_token}"
+                        )
+                        st.plotly_chart(fig_pie, use_container_width=True)
 
 # Footer
 st.markdown("---")
