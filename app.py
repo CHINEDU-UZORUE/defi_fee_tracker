@@ -526,26 +526,24 @@ with tab3:
     </style>
     """, unsafe_allow_html=True)
 
+   
     if 'financial' in summary_stats and not filtered_metrics.empty:
-        col1, col2, col3 = st.columns([1, 1, 1])      
+        col1, col2, col3 = st.columns([1, 1, 1])
         avg_pf = filtered_metrics['PF_Ratio'].median()
         avg_pr = filtered_metrics['PR_Ratio'].median()
         top_revenue_protocol = filtered_metrics.loc[filtered_metrics['Revenue_24h'].idxmax(), 'Protocol'] if filtered_metrics['Revenue_24h'].max() > 0 else 'N/A'
-        
         with col1:
             st.markdown(create_metric_card(
                 "Median P/F Ratio",
                 f"{avg_pf:.2f}" if avg_pf and not pd.isna(avg_pf) else "N/A",
                 "blue"
             ), unsafe_allow_html=True)
-        
         with col2:
             st.markdown(create_metric_card(
                 "Median P/R Ratio",
                 f"{avg_pr:.2f}" if avg_pr and not pd.isna(avg_pr) else "N/A",
                 "green"
             ), unsafe_allow_html=True)
-        
         with col3:
             st.markdown(create_metric_card(
                 "Top Revenue Protocol",
