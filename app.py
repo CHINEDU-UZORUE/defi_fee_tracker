@@ -484,13 +484,29 @@ with tab2:
 
          
 
+st.markdown("""
+<style>
+    .metric-card, .metric-card-green, .metric-card-orange, .metric-card-blue {
+        min-height: 120px;
+        height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        margin-bottom: 0 !important;
+    }
+    .st-emotion-cache-1r6slb0 {  /* Streamlit column container */
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Tab 3: Metrics
 with tab3:
     st.header("📈 Financial Metrics")
-    
-    # Sidebar filters for metrics
     st.sidebar.subheader("📈 Metrics Filters")
-    
     if not tab3_metrics.empty:
         max_pf_ratio = st.sidebar.slider(
             "Max P/F Ratio",
@@ -506,28 +522,15 @@ with tab3:
             value=50.0,
             step=1.0
         )
-        
         filtered_metrics = tab3_metrics[
             (tab3_metrics['PF_Ratio'] <= max_pf_ratio) &
             (tab3_metrics['PR_Ratio'] <= max_pr_ratio)
         ]
     else:
         filtered_metrics = tab3_metrics
-    
-    # KPIs
-    st.markdown("""
-    <style>
-        .metric-card, .metric-card-green, .metric-card-orange, .metric-card-blue {
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-    </style>
-    """, unsafe_allow_html=True)
 
-   
     if 'financial' in summary_stats and not filtered_metrics.empty:
+        # Use equal width columns and no extra markdown between them
         col1, col2, col3 = st.columns([1, 1, 1])
         avg_pf = filtered_metrics['PF_Ratio'].median()
         avg_pr = filtered_metrics['PR_Ratio'].median()
