@@ -515,9 +515,19 @@ with tab3:
         filtered_metrics = tab3_metrics
     
     # KPIs
+    st.markdown("""
+    <style>
+        .metric-card, .metric-card-green, .metric-card-orange, .metric-card-blue {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     if 'financial' in summary_stats and not filtered_metrics.empty:
-        col1, col2, col3 = st.columns(3)
-        
+        col1, col2, col3 = st.columns([1, 1, 1])      
         avg_pf = filtered_metrics['PF_Ratio'].median()
         avg_pr = filtered_metrics['PR_Ratio'].median()
         top_revenue_protocol = filtered_metrics.loc[filtered_metrics['Revenue_24h'].idxmax(), 'Protocol'] if filtered_metrics['Revenue_24h'].max() > 0 else 'N/A'
