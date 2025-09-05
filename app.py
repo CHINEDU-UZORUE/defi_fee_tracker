@@ -844,7 +844,6 @@ with col1:
 with col2:
     st.markdown("**🔄 Refresh Schedule:**")
     st.markdown("- Manual refresh: From Notebook")
-    st.markdown("- Manual refresh: Use sidebar button")
     st.markdown("- Data collection: Via APIs")
 
 with col3:
