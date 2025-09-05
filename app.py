@@ -668,7 +668,7 @@ with tab4:
         format_dict = {
             'top_10_holders_share': lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A",
             'gini_coefficient': lambda x: f"{x:.3f}" if pd.notna(x) else "N/A",
-            'token_price_usd': lambda x: f"${x:.2f}" if pd.notna(x) else "$0.00"
+            'token_price_usd': lambda x: f"${x:.6f}" if pd.notna(x) else "$0.00"
         }
         format_dict = {k: v for k, v in format_dict.items() if k in display_cols}
         
