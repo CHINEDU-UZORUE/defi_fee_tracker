@@ -670,7 +670,7 @@ with tab4:
     if not filtered_distribution.empty:
         # Distribution table
         st.subheader("📊 Token Concentration Metrics")
-        display_cols = [col for col in ['token_name', 'token_symbol', 'token_price_usd','top_10_holders_share', 'gini_coefficient']
+        display_cols = [col for col in ['Protocol', 'Token Symbol', 'Token Price(USD)','Top 10 Holders Share', 'Gini Coefficient']
                        if col in filtered_distribution.columns]
         
         display_dist = filtered_distribution[display_cols].reset_index(drop=True)
