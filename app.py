@@ -259,7 +259,7 @@ with tab0:
             Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, or hit the "Refresh Data" button for the latest updates. Built with <strong>Streamlit</strong> for seamless exploration.
         </p>
         <p class="welcome-text">
-            <strong>Last Updated:</strong> {last_updated_str}
+            <strong>Last Updated:</strong> {last_updated_str} | Developed by Chinedu Uzorue and Tobechi Anonye for Analytic Sages
         </p>
     </div>
     """.format(last_updated_str=last_updated.strftime('%Y-%m-%d %H:%M:%S')), unsafe_allow_html=True)
