@@ -371,7 +371,7 @@ with tab2:
         with col2:
             daily_revenue = tab2_revenue['Revenue_24h'].sum() if not tab2_revenue.empty else kpis.get('total_daily_revenue', 0)
             st.markdown(create_metric_card(
-                "Daily Revenue",
+                "Total 24h Revenue",
                 format_currency(daily_revenue),
                 "green"
             ), unsafe_allow_html=True)
@@ -387,7 +387,7 @@ with tab2:
         with col4:
             daily_fees = tab2_fees['Fees_24h'].sum() if not tab2_fees.empty else kpis.get('total_daily_fees', 0)
             st.markdown(create_metric_card(
-                "Daily Fees",
+                "Total 24h Fees",
                 format_currency(daily_fees),
                 "default"
             ), unsafe_allow_html=True)
