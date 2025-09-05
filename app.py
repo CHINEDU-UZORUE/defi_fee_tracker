@@ -681,7 +681,7 @@ with tab4:
             if 'gini_coefficient' in filtered_distribution.columns:
                 st.subheader("🔴 Most Concentrated Tokens")
                 top_gini = filtered_distribution.nlargest(10, 'gini_coefficient')
-                fig = px.bar(top_gini, x='token_name', y='gini_coefficient',
+                fig = px.bar(top_gini, x='protocol_name', y='gini_coefficient',
                            title="Highest Gini Coefficients",
                            color_discrete_sequence=['#f5576c'])
                 fig.update_layout(xaxis_tickangle=45)
@@ -719,17 +719,17 @@ with tab4:
                     
                     # Table
                     st.subheader(f"Top 10 Holders for {selected_token}")
-                    display_holders = holders_df[['rank', 'account_address', 'amount']].reset_index(drop=True)
+                    display_holders = holders_df[['rank', 'account_address', 'ui_amount']].reset_index(drop=True)
                     display_holders.index = display_holders.index + 1
                     format_dict = {
-                        'amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
+                        'ui_amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
                     }
                     st.dataframe(display_holders.style.format(format_dict), use_container_width=True)
                     
                     # Pie chart
-                    total_supply = holders_df['amount'].sum()
+                    total_supply = holders_df['ui_amount'].sum()
                     if total_supply > 0:
-                        holders_df['share_percent'] = (holders_df['amount'] / total_supply) * 100
+                        holders_df['share_percent'] = (holders_df['ui_amount'] / total_supply) * 100
                         fig_pie = px.pie(
                             holders_df,
                             values='share_percent',
