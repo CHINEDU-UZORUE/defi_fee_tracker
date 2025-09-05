@@ -719,17 +719,17 @@ with tab4:
                     
                     # Table
                     st.subheader(f"Top 10 Holders for {selected_token}")
-                    display_holders = holders_df[['rank', 'account_address', 'ui_amount']].reset_index(drop=True)
+                    display_holders = holders_df[['rank', 'account_address', 'amount']].reset_index(drop=True)
                     display_holders.index = display_holders.index + 1
                     format_dict = {
-                        'ui_amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
+                        'amount': lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
                     }
                     st.dataframe(display_holders.style.format(format_dict), use_container_width=True)
                     
                     # Pie chart
-                    total_supply = holders_df['ui_amount'].sum()
+                    total_supply = holders_df['amount'].sum()
                     if total_supply > 0:
-                        holders_df['share_percent'] = (holders_df['ui_amount'] / total_supply) * 100
+                        holders_df['share_percent'] = (holders_df['amount'] / total_supply) * 100
                         fig_pie = px.pie(
                             holders_df,
                             values='share_percent',
