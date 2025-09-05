@@ -515,17 +515,6 @@ with tab3:
         filtered_metrics = tab3_metrics
     
     # KPIs
-    st.markdown("""
-    <style>
-        .metric-card, .metric-card-green, .metric-card-orange, .metric-card-blue {
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
     if 'financial' in summary_stats and not filtered_metrics.empty:
         col1, col2, col3 = st.columns(3)
         
@@ -670,7 +659,7 @@ with tab4:
     if not filtered_distribution.empty:
         # Distribution table
         st.subheader("📊 Token Concentration Metrics")
-        display_cols = [col for col in ['Protocol', 'Token Symbol', 'Token Price(USD)','Top 10 Holders Share', 'Gini Coefficient']
+        display_cols = [col for col in ['token_name', 'token_symbol', 'token_price_usd','top_10_holders_share', 'gini_coefficient']
                        if col in filtered_distribution.columns]
         
         display_dist = filtered_distribution[display_cols].reset_index(drop=True)
