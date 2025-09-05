@@ -256,7 +256,7 @@ with tab0:
             <li><strong>Token Distribution</strong>: Assess decentralization through Gini coefficients and holder concentration.</li>
         </ul>
         <p class="welcome-text">
-            Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, or hit the "Refresh Data" button for the latest updates. Built with <strong>Streamlit</strong> for seamless exploration.
+            Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, or hit the "Refresh Data" button for the latest updates.
         </p>
         <p class="welcome-text">
             <strong>Last Updated:</strong> {last_updated_str} | Developed by Chinedu Uzorue and Tobechi Anonye for Analytic Sages
@@ -685,6 +685,25 @@ with tab4:
         
         st.dataframe(display_dist.style.format(format_dict), use_container_width=True)
         
+        # Descriptive text for Gini Coefficient and Token Concentration
+        st.markdown("""
+        <div class="welcome-section">
+            <h3 class="welcome-title">Understanding Token Distribution Metrics</h3>
+            <p class="welcome-text">
+                <strong>Gini Coefficient:</strong> The Gini Coefficient measures the inequality of token distribution among holders. It ranges from 0 to 1, where:
+                <ul>
+                    <li><strong>0</strong>: Perfect equality (every holder has the same amount of tokens).</li>
+                    <li><strong>1</strong>: Complete inequality (one holder owns all tokens).</li>
+                </ul>
+                A higher Gini Coefficient indicates a more centralized token distribution.
+            </p>
+            <p class="welcome-text">
+                <strong>Token Concentration (Top 10 Holders Share):</strong> This metric shows the percentage of total token supply held by the top 10 addresses. A higher percentage indicates greater concentration, suggesting that a small number of holders control a significant portion of the tokens, which may imply less decentralization.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+
         # Charts
         col1, col2 = st.columns(2)
         
