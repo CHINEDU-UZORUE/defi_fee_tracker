@@ -107,6 +107,31 @@ def create_metric_card(title, value, card_type="default"):
     </div>
     """
 
+def add_category_to_financial_data(financial_df, overview_df, protocol_col='Protocol'):
+    """Add category information to financial data by merging with overview data"""
+    if financial_df.empty or overview_df.empty:
+        return financial_df
+    
+    # Create a mapping from protocol to category
+    category_mapping = overview_df[['Protocol', 'Category']].drop_duplicates()
+    category_mapping['Protocol_clean'] = category_mapping['Protocol'].str.lower().str.strip()
+    
+    # Clean protocol names in financial data
+    financial_clean = financial_df.copy()
+    financial_clean['Protocol_clean'] = financial_clean[protocol_col].str.lower().str.strip()
+    
+    # Merge to add categories
+    merged = financial_clean.merge(
+        category_mapping[['Protocol_clean', 'Category']], 
+        on='Protocol_clean', 
+        how='left'
+    )
+    
+    # Fill missing categories
+    merged['Category'] = merged['Category'].fillna('Other')
+    
+    return merged.drop('Protocol_clean', axis=1)
+
 # Data directory
 data_dir = 'data/streamlit'
 metadata_file = os.path.join(data_dir, 'latest_data_metadata.joblib')
@@ -163,10 +188,6 @@ st.markdown(f"**Last Updated:** {last_updated.strftime('%Y-%m-%d %H:%M:%S')}")
 
 # Sidebar with filters
 st.sidebar.header("🔍 Filters & Controls")
-
-# Manual refresh button
-if st.sidebar.button("🔄 Refresh Data"):
-    st.rerun()
 
 # Category filter for Tab 1
 available_categories = []
@@ -355,10 +376,14 @@ with tab1:
 with tab2:
     st.header("💰 Revenue & Fees")
     
+    # Add categories to revenue and fees data
+    tab2_revenue_with_category = add_category_to_financial_data(tab2_revenue, tab1_overview)
+    tab2_fees_with_category = add_category_to_financial_data(tab2_fees, tab1_overview)
+    
     # KPIs
     if 'financial' in summary_stats:
         kpis = summary_stats['financial']
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             protocols_with_rev = len(tab2_revenue[tab2_revenue['Revenue_24h'] > 0]) if not tab2_revenue.empty else kpis.get('protocols_with_revenue', 0)
@@ -371,7 +396,7 @@ with tab2:
         with col2:
             daily_revenue = tab2_revenue['Revenue_24h'].sum() if not tab2_revenue.empty else kpis.get('total_daily_revenue', 0)
             st.markdown(create_metric_card(
-                "Total 24h Revenue",
+                "Daily Revenue",
                 format_currency(daily_revenue),
                 "green"
             ), unsafe_allow_html=True)
@@ -387,18 +412,62 @@ with tab2:
         with col4:
             daily_fees = tab2_fees['Fees_24h'].sum() if not tab2_fees.empty else kpis.get('total_daily_fees', 0)
             st.markdown(create_metric_card(
-                "Total 24h Fees",
+                "Daily Fees",
                 format_currency(daily_fees),
                 "default"
             ), unsafe_allow_html=True)
-        
-        with col5:
-            avg_ratio = summary_stats['financial'].get('avg_fees_revenue_ratio', 'N/A')
-            st.markdown(create_metric_card(
-                "Avg Fees/Rev Ratio",
-                f"{avg_ratio:.2f}" if avg_ratio and not pd.isna(avg_ratio) else "N/A",
-                "default"
-            ), unsafe_allow_html=True)
+    
+    # Category Pie Charts Row
+    st.subheader("📊 24h Revenue & Fees by Category")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if not tab2_revenue_with_category.empty and 'Category' in tab2_revenue_with_category.columns:
+            # Revenue by category
+            revenue_by_category = tab2_revenue_with_category.groupby('Category')['Revenue_24h'].sum().reset_index()
+            revenue_by_category = revenue_by_category[revenue_by_category['Revenue_24h'] > 0]  # Only show categories with revenue
+            
+            if not revenue_by_category.empty:
+                st.subheader("💵 Revenue by Category")
+                fig_revenue_pie = px.pie(
+                    revenue_by_category, 
+                    values='Revenue_24h', 
+                    names='Category',
+                    title="24h Revenue Distribution by Category",
+                    color_discrete_sequence=px.colors.qualitative.Set3
+                )
+                fig_revenue_pie.update_traces(
+                    textposition='inside', 
+                    textinfo='percent+label',
+                    hovertemplate='<b>%{label}</b><br>Revenue: $%{value:,.0f}<br>Percentage: %{percent}<extra></extra>'
+                )
+                st.plotly_chart(fig_revenue_pie, use_container_width=True)
+            else:
+                st.info("No revenue data available by category")
+    
+    with col2:
+        if not tab2_fees_with_category.empty and 'Category' in tab2_fees_with_category.columns:
+            # Fees by category
+            fees_by_category = tab2_fees_with_category.groupby('Category')['Fees_24h'].sum().reset_index()
+            fees_by_category = fees_by_category[fees_by_category['Fees_24h'] > 0]  # Only show categories with fees
+            
+            if not fees_by_category.empty:
+                st.subheader("💸 Fees by Category")
+                fig_fees_pie = px.pie(
+                    fees_by_category, 
+                    values='Fees_24h', 
+                    names='Category',
+                    title="24h Fees Distribution by Category",
+                    color_discrete_sequence=px.colors.qualitative.Pastel
+                )
+                fig_fees_pie.update_traces(
+                    textposition='inside', 
+                    textinfo='percent+label',
+                    hovertemplate='<b>%{label}</b><br>Fees: $%{value:,.0f}<br>Percentage: %{percent}<extra></extra>'
+                )
+                st.plotly_chart(fig_fees_pie, use_container_width=True)
+            else:
+                st.info("No fees data available by category")
     
     col1, col2 = st.columns(2)
     
@@ -416,25 +485,19 @@ with tab2:
                         title="24h Revenue", color_discrete_sequence=['#11998e'])
             fig.update_layout(xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
-            
-           
         
-        # All Revenue Data table
+        # Full revenue table
         if not tab2_revenue.empty:
             st.subheader("📋 All Revenue Data")
-            display_revenue = tab3_metrics[['Protocol', 'Revenue_24h', 'Revenue_7d', 'Revenue_30d',
-                                            'Fees_Revenue_Ratio_24h', 'Fees_Revenue_Ratio_7d', 'Fees_Revenue_Ratio_30d']].reset_index(drop=True)
+            display_revenue = tab2_revenue[['Protocol', 'Revenue_24h', 'Revenue_7d', 'Revenue_30d']].reset_index(drop=True)
             display_revenue.index = display_revenue.index + 1
             format_dict = {
                 'Revenue_24h': lambda x: format_currency(x),
                 'Revenue_7d': lambda x: format_currency(x),
-                'Revenue_30d': lambda x: format_currency(x),
-                'Fees_Revenue_Ratio_24h': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
-                'Fees_Revenue_Ratio_7d': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A",
-                'Fees_Revenue_Ratio_30d': lambda x: f"{x:.2f}" if pd.notna(x) else "N/A"
+                'Revenue_30d': lambda x: format_currency(x)
             }
             st.dataframe(display_revenue.style.format(format_dict), use_container_width=True)
-
+    
     # Fees
     with col2:
         st.subheader("💸 Top Fee Generators")
@@ -450,7 +513,7 @@ with tab2:
             fig.update_layout(xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
         
-        # All Fees Data table
+        # Full fees table
         if not tab2_fees.empty:
             st.subheader("📋 All Fees Data")
             display_fees = tab2_fees[['Protocol', 'Fees_24h', 'Fees_7d', 'Fees_30d']].reset_index(drop=True)
@@ -780,7 +843,7 @@ with col1:
 
 with col2:
     st.markdown("**🔄 Refresh Schedule:**")
-    st.markdown("- Auto-refresh: Every 24 hours")
+    st.markdown("- Manual refresh: From Notebook")
     st.markdown("- Manual refresh: Use sidebar button")
     st.markdown("- Data collection: Via APIs")
 
