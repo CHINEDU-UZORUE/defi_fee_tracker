@@ -515,6 +515,17 @@ with tab3:
         filtered_metrics = tab3_metrics
     
     # KPIs
+    st.markdown("""
+    <style>
+        .metric-card, .metric-card-green, .metric-card-orange, .metric-card-blue {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     if 'financial' in summary_stats and not filtered_metrics.empty:
         col1, col2, col3 = st.columns(3)
         
