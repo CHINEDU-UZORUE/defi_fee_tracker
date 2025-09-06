@@ -254,7 +254,6 @@ tab0, tab1, tab2, tab3, tab4 = st.tabs(["🏠 Home", "📊 Overview", "💰 Reve
 # Tab 0: Home (Landing Page)
 with tab0:
     st.markdown('<div class="welcome-container">', unsafe_allow_html=True)
-    
     st.title("🚀 Welcome to the Solana DeFi Tracker Dashboard!")
     
     st.markdown("""
@@ -263,12 +262,12 @@ with tab0:
     Analyze over 200 protocols across key metrics to make informed decisions:
     """)
     
-    # Feature list using native Streamlit
+    # Fixed bullet list using proper Markdown syntax
     st.markdown("""
-    • **Overview**: Track Total Value Locked (TVL), market capitalization, and protocol categories.
-    • **Revenue & Fees**: Explore daily, weekly, and monthly earnings, including Fees/Revenue ratios.
-    • **Financial Metrics**: Evaluate protocols with Price-to-Fees (P/F) and Price-to-Revenue (P/R) ratios.
-    • **Token Distribution**: Assess decentralization through Gini coefficients and holder concentration.
+    - **Overview**: Track Total Value Locked (TVL), market capitalization, and protocol categories.
+    - **Revenue & Fees**: Explore daily, weekly, and monthly earnings, including Fees/Revenue ratios.
+    - **Financial Metrics**: Evaluate protocols with Price-to-Fees (P/F) and Price-to-Revenue (P/R) ratios.
+    - **Token Distribution**: Assess decentralization through Gini coefficients and holder concentration.
     """)
     
     st.markdown("""
@@ -284,6 +283,7 @@ with tab0:
     """)
     
     st.markdown('</div>', unsafe_allow_html=True)
+
 # Tab 1: Overview
 with tab1:
     st.header("📊 Protocols Overview")
