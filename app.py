@@ -72,7 +72,7 @@ st.markdown("""
     .welcome-title {
             font-size: 2rem; 
             font-weight: 700; 
-            color: #e5e7eb; 
+            color: #d1d5db; 
             margin-bottom: 1rem;
             }
     .welcome-text {
