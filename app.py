@@ -271,8 +271,7 @@ with tab0:
     """)
     
     st.markdown("""
-    Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, 
-    or hit the "Refresh Data" button for the latest updates.
+    Use the sidebar to filter data by category, TVL range, or top protocols.
     """)
     
     # Last updated info
