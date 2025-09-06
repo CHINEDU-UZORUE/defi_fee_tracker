@@ -14,7 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for colorful KPI cards and landing page
 st.markdown("""
 <style>
     .metric-card {
@@ -63,24 +62,15 @@ st.markdown("""
         font-weight: 700;
         margin: 0;
     }
-   .welcome-section {
-            background-color: #1f2937; 
-            padding: 20px; border-radius: 10px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            }
-    .welcome-title {
-            font-size: 2rem; 
-            font-weight: 700; 
-            color: #d1d5db; 
-            margin-bottom: 1rem;
-            }
-    .welcome-text {
-            font-size: 1.1rem; 
-            color: #d1d5db; 
-            line-height: 3.0;
-            }
-
+    
+    /* Simple welcome container */
+    .welcome-container {
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 2px solid #4facfe;
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -263,28 +253,37 @@ tab0, tab1, tab2, tab3, tab4 = st.tabs(["🏠 Home", "📊 Overview", "💰 Reve
 
 # Tab 0: Home (Landing Page)
 with tab0:
+    st.markdown('<div class="welcome-container">', unsafe_allow_html=True)
+    
+    st.title("🚀 Welcome to the Solana DeFi Tracker Dashboard!")
+    
     st.markdown("""
-    <div class="welcome-section">
-        <h1 class="welcome-title">Welcome to the Solana DeFi Tracker Dashboard! 🚀</h1>
-        <p class="welcome-text">
-            This is a Solana DeFi Protocols tracker with an interactive dashboard for fees, revenue, price-to-fee ratio and other metrics. It is powered by data from <strong>DeFiLlama</strong>, <strong>CoinGecko</strong>, and <strong>Solana RPC (Helius)</strong>. 
-            Analyze over 200 protocols across key metrics to make informed decisions:
-        </p>
-        <ul class="welcome-text">
-            <li><strong>Overview</strong>: Track Total Value Locked (TVL), market capitalization, and protocol categories.</li>
-            <li><strong>Revenue & Fees</strong>: Explore daily, weekly, and monthly earnings, including Fees/Revenue ratios.</li>
-            <li><strong>Financial Metrics</strong>: Evaluate protocols with Price-to-Fees (P/F) and Price-to-Revenue (P/R) ratios.</li>
-            <li><strong>Token Distribution</strong>: Assess decentralization through Gini coefficients and holder concentration.</li>
-        </ul>
-        <p class="welcome-text">
-            Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, or hit the "Refresh Data" button for the latest updates.
-        </p>
-        <p class="welcome-text">
-            <strong>Last Updated:</strong> {last_updated_str} | Developed by Chinedu Uzorue and Tobechi Anonye for Analytic Sages
-        </p>
-    </div>
-    """.format(last_updated_str=last_updated.strftime('%Y-%m-%d %H:%M:%S')), unsafe_allow_html=True)
-
+    **This is a Solana DeFi Protocols tracker** with an interactive dashboard for fees, revenue, price-to-fee ratio and other metrics. 
+    It is powered by data from **DeFiLlama**, **CoinGecko**, and **Solana RPC (Helius)**. 
+    Analyze over 200 protocols across key metrics to make informed decisions:
+    """)
+    
+    # Feature list using native Streamlit
+    st.markdown("""
+    • **Overview**: Track Total Value Locked (TVL), market capitalization, and protocol categories.
+    • **Revenue & Fees**: Explore daily, weekly, and monthly earnings, including Fees/Revenue ratios.
+    • **Financial Metrics**: Evaluate protocols with Price-to-Fees (P/F) and Price-to-Revenue (P/R) ratios.
+    • **Token Distribution**: Assess decentralization through Gini coefficients and holder concentration.
+    """)
+    
+    st.markdown("""
+    Use the sidebar to filter data by category, TVL range, or top protocols. Data refreshes every 24 hours, 
+    or hit the "Refresh Data" button for the latest updates.
+    """)
+    
+    # Last updated info
+    last_updated = metadata['last_updated']
+    st.markdown(f"""
+    **Last Updated:** {last_updated.strftime('%Y-%m-%d %H:%M:%S')} | 
+    Developed by **Chinedu Uzorue** and **Tobechi Anonye** for **Analytic Sages**
+    """)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 # Tab 1: Overview
 with tab1:
     st.header("📊 Protocols Overview")
