@@ -253,8 +253,8 @@ tab0, tab1, tab2, tab3, tab4 = st.tabs(["🏠 Home", "📊 Overview", "💰 Reve
 
 # Tab 0: Home (Landing Page)
 with tab0:
-    st.markdown('<div class="welcome-container">', unsafe_allow_html=True)
-    st.title("🚀 Welcome to the Solana DeFi Tracker Dashboard!")
+    
+    st.title("Welcome to the Solana DeFi Tracker Dashboard!")
     
     st.markdown("""
     **This is a Solana DeFi Protocols tracker** with an interactive dashboard for fees, revenue, price-to-fee ratio and other metrics. 
